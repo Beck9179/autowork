@@ -1,0 +1,35 @@
+{
+  "summary": "Cash Claw MVP first-run E2E validated. Backend: 17/17 pytest cases pass against public EXPO_PUBLIC_BACKEND_URL covering catalog (12 seeded agents, 6 categories, filter), agent detail (my_deployment), deploy + total_deploys increment, my-agents tick-on-request (earnings & XP grow over 5s), toggle pause/resume (+404), dashboard aggregates + featured agent, leaderboard (>=10 rows via community_earned fallback), profile (@neon_runner / OPERATOR_01), wallet growth, withdraw success, and withdraw 400 on insufficient/zero. Frontend: Expo web preview loads on mobile viewport 390x844 with no red-screen / page errors; Dashboard renders CASH CLAW title, $ hero total-earnings, active/pending KPIs, featured agent card with working deploy-featured-agent-button (agent appears in MY FLEET within 3s); Marketplace CLUSTER tab shows marketplace-title + category chips (trading filter narrows to 3 cards), per-card deploy buttons route to Agent Detail; Agent Detail shows agent-name, agent-evolution-bar, and agent-toggle-button that pauses and resumes cleanly; RANKS tab shows leaderboard-title + leaderboard-row-1; WALLET tab shows wallet-title, wallet-balance, withdraw modal with withdraw-amount-input and withdraw-confirm creating a payout row; OPERATOR tab shows profile-handle '@neon_runner', OPERATOR_01 tier pill, and 3 stat cards. Tab-bar navigation works across all 5 tabs (labels: VAULT/CLUSTER/RANKS/WALLET/OPERATOR).",
+  "backend_issues": {"critical": [], "minor": [
+    {"endpoint": "POST /api/wallet/withdraw", "issue": "Payout amount stored via round(amount, 2) so micro-withdrawals < $0.005 persist as $0.00 in Recent Payouts list. Not a blocker but can confuse users in this demo mode."},
+    {"endpoint": "POST /api/wallet/withdraw", "issue": "Validation order: insufficient-balance check runs before amount<=0 check, so a negative amount against a wallet with lower balance returns 400 'Insufficient balance' instead of a clearer 'Amount must be positive'. Cosmetic."}
+  ]},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "global", "issues": ["Expo logs show repeated deprecation warnings: 'shadow* style props are deprecated. Use boxShadow.' Non-breaking, but should migrate for future RN compatibility."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_cashclaw.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "(Optional polish) Migrate shadow* style props in GlassCard/NeonButton/etc. to boxShadow to silence RN deprecation warnings.",
+    "(Optional polish) Either reject withdraw amounts < $0.01 with 400, or store raw amount (not rounded) so micro-payout records don't display as $0.00.",
+    "(Optional polish) Reorder withdraw validation to check amount>0 before balance comparison for clearer error messages."
+  ],
+  "critical_code_review_comments": [
+    "server.py: all endpoints correctly exclude Mongo _id via projection/_strip. Good.",
+    "server.py: tick-on-request logic is correct and self-throttles at <1s elapsed. Earnings/XP grow deterministically in tests.",
+    "server.py: categories endpoint returns exactly 6 entries (all + 5) as specified.",
+    "server.py: deploy is idempotent on reactivation (no double-increment of total_deploys), which matches spec.",
+    "server.py is ~600 lines in one module; still readable but nearing the 700-line threshold — consider splitting models/seed/routes if more features land."
+  ],
+  "updated_files": ["/app/backend/tests/test_cashclaw.py (new)", "/app/test_reports/iteration_1.json (new)"],
+  "success_rate": {"backend": "100% (17/17)", "frontend": "100% of listed testIDs and flows verified"},
+  "seed_data_creation": "None manually created. Backend self-seeds 12 agents + demo wallet on startup if collections empty; demo user 'user_demo' now has multiple deployed agents and 2 payout rows from the E2E run.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Single-user demo, no auth. Use https://agent-learning-money.preview.emergentagent.com for both API (/api/*) and UI. Earnings tick on every request — poll /api/wallet or /api/my-agents twice with sleep(3-5) to assert growth. Tab labels in UI are VAULT/CLUSTER/RANKS/WALLET/OPERATOR (not Market/Leaders/Profile). testIDs listed in the review request all exist and resolve as data-testid on web. DEMO_USER_ID='user_demo' — state persists across test runs, so don't assert exact counts, only monotonic growth.",
+  "rca_of_issue": "N/A — no blocking issues found. Minor observations only."
+}
