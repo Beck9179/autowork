@@ -1,0 +1,208 @@
+{
+  "project_name": "Cash Claw",
+  "platform": "React Native Expo SDK 54",
+  "theme": {
+    "archetype": "7: Electric & Neon",
+    "mode": "Dark",
+    "description": "Deep void black backgrounds with vivid neon accents. Electric green for financial data, cyan/magenta for AI agents and evolution metrics. High contrast, technical, and lucrative vibe."
+  },
+  "colors": {
+    "background": "#030305",
+    "surface": "#0D0D14",
+    "surfaceHighlight": "#1A1A26",
+    "border": "rgba(255,255,255,0.05)",
+    "borderGlowCyan": "rgba(0, 255, 255, 0.3)",
+    "borderGlowGreen": "rgba(57, 255, 20, 0.3)",
+    "primary": "#39FF14",
+    "primaryGlow": "rgba(57, 255, 20, 0.5)",
+    "aiCyan": "#00FFFF",
+    "aiMagenta": "#FF00FF",
+    "textPrimary": "#FFFFFF",
+    "textSecondary": "#A1A1B5",
+    "textMuted": "#66667A",
+    "danger": "#FF3366"
+  },
+  "typography": {
+    "description": "Since this is React Native, configure custom fonts if possible, or fall back to system sans-serif with specific weights. Space Mono is critical for all numbers to give that 'code/terminal' feel.",
+    "families": {
+      "heading": "Unbounded, Syncopate, or System Bold (sans-serif)",
+      "body": "Outfit, Karla, or System Regular (sans-serif)",
+      "numbers": "SpaceMono-Regular, monospace"
+    },
+    "scales": {
+      "h1": { "fontSize": 48, "fontWeight": "900", "letterSpacing": -1 },
+      "h2": { "fontSize": 32, "fontWeight": "800", "letterSpacing": -0.5 },
+      "h3": { "fontSize": 24, "fontWeight": "700" },
+      "h4": { "fontSize": 18, "fontWeight": "600" },
+      "body": { "fontSize": 16, "fontWeight": "400", "lineHeight": 24 },
+      "caption": { "fontSize": 12, "fontWeight": "500", "letterSpacing": 1 },
+      "hugeNumber": { "fontSize": 56, "fontWeight": "bold", "fontFamily": "monospace", "letterSpacing": -2 }
+    }
+  },
+  "spacing_and_layout": {
+    "tokens": {
+      "xs": 4,
+      "sm": 8,
+      "md": 16,
+      "lg": 24,
+      "xl": 32,
+      "2xl": 48,
+      "3xl": 64
+    },
+    "borderRadius": {
+      "sm": 8,
+      "md": 12,
+      "lg": 16,
+      "xl": 24,
+      "pill": 9999
+    },
+    "layout_rules": {
+      "screenPadding": 24,
+      "gapVertical": 16,
+      "gapHorizontal": 16
+    }
+  },
+  "icons": {
+    "library": "@expo/vector-icons",
+    "family": "Ionicons",
+    "mappings": {
+      "dashboard": "grid-outline",
+      "marketplace": "planet-outline",
+      "leaderboard": "trophy-outline",
+      "wallet": "wallet-outline",
+      "profile": "person-circle-outline",
+      "money": "cash-outline",
+      "trendingUp": "trending-up-outline",
+      "agent": "hardware-chip-outline",
+      "deploy": "rocket-outline",
+      "pause": "pause-circle-outline",
+      "play": "play-circle-outline"
+    }
+  },
+  "components": {
+    "GlassCard": {
+      "container": "backgroundColor: '#0D0D14', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)'",
+      "shadow": "shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.5, shadowRadius: 20"
+    },
+    "NeonButtonPrimary": {
+      "container": "backgroundColor: '#39FF14', paddingVertical: 16, paddingHorizontal: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center'",
+      "text": "color: '#030305', fontSize: 16, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1",
+      "shadow": "shadowColor: '#39FF14', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 15, elevation: 10"
+    },
+    "NeonButtonSecondary": {
+      "container": "backgroundColor: 'transparent', paddingVertical: 16, paddingHorizontal: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#00FFFF'",
+      "text": "color: '#00FFFF', fontSize: 16, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1",
+      "shadow": "shadowColor: '#00FFFF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 10"
+    },
+    "ProgressBar": {
+      "track": "height: 8, backgroundColor: '#1A1A26', borderRadius: 4, overflow: 'hidden'",
+      "fillCyan": "height: '100%', backgroundColor: '#00FFFF'",
+      "fillMagenta": "height: '100%', backgroundColor: '#FF00FF'"
+    },
+    "CategoryChip": {
+      "container": "paddingHorizontal: 16, paddingVertical: 8, borderRadius: 9999, backgroundColor: '#1A1A26', marginRight: 8",
+      "containerActive": "backgroundColor: '#00FFFF'",
+      "text": "color: '#A1A1B5', fontSize: 14, fontWeight: '600'",
+      "textActive": "color: '#030305'"
+    }
+  },
+  "animations": {
+    "library": "react-native-reanimated",
+    "presets": {
+      "listEntrance": "FadeInDown.delay(index * 100).springify()",
+      "numberTick": "Use Reanimated to animate numbers rolling up",
+      "pulseGlow": "withRepeat(withSequence(withTiming(0.5, {duration: 1000}), withTiming(1, {duration: 1000})), -1, true)"
+    }
+  },
+  "screens": [
+    {
+      "name": "Dashboard (Home)",
+      "route": "/app/(tabs)/index.js",
+      "layout": [
+        { "component": "Header", "props": { "avatarUrl": "user_avatar", "greeting": "SYSTEM.ONLINE // WELCOME_BACK" } },
+        { "component": "KPI Tile - Total Earned", "styles": "Massive text, textPrimary: #39FF14, monospace. Includes background sparkline." },
+        { "component": "Grid Row", "children": [
+          { "component": "KPI Tile - Active Agents", "styles": "Cyan text" },
+          { "component": "KPI Tile - Pending Payout", "styles": "White text" }
+        ]},
+        { "component": "SectionTitle", "text": "FEATURED AGENT" },
+        { "component": "Hero Card", "styles": "Image background, cyan glowing border, title, XP bar, 'Deploy' button." }
+      ]
+    },
+    {
+      "name": "Marketplace",
+      "route": "/app/(tabs)/marketplace.js",
+      "layout": [
+        { "component": "HeaderTitle", "text": "AGENT CLUSTER" },
+        { "component": "Horizontal Scroll", "children": ["Category Chips (Trading, Content, Tasks, Scraping)"] },
+        { "component": "FlatList", "children": ["Agent Cards: thumbnail on left, name/level/ROI on right, rightmost deploy icon."] }
+      ]
+    },
+    {
+      "name": "Agent Detail Screen",
+      "route": "/app/agent/[id].js",
+      "layout": [
+        { "component": "Hero Image", "props": { "url": "ai_core_1", "height": 300 } },
+        { "component": "Body Container", "styles": "Top padding negative to overlap image, border top radius 24, bg surface" },
+        { "component": "Title & Tags", "styles": "Row layout" },
+        { "component": "Evolution Progress", "children": ["Level text, XP amount, Magenta progress bar."] },
+        { "component": "Earnings Chart Placeholder", "styles": "Height 150, border borderGlowGreen" },
+        { "component": "Floating Bottom Bar", "children": ["Activate/Deploy NeonButtonPrimary"] }
+      ]
+    },
+    {
+      "name": "Leaderboard",
+      "route": "/app/(tabs)/leaderboard.js",
+      "layout": [
+        { "component": "HeaderTitle", "text": "GLOBAL RANKINGS" },
+        { "component": "FlatList", "children": ["Rank items. Top 1 has Gold/Cyan glow. Shows agent name, creator, total yielded."] }
+      ]
+    },
+    {
+      "name": "Wallet",
+      "route": "/app/(tabs)/wallet.js",
+      "layout": [
+        { "component": "Balance Card", "styles": "Gradient or dark solid with Green glow. Massive balance." },
+        { "component": "Action Row", "children": ["Withdraw Button"] },
+        { "component": "Recent Payouts List", "styles": "List of transaction rows." }
+      ]
+    },
+    {
+      "name": "Profile",
+      "route": "/app/(tabs)/profile.js",
+      "layout": [
+        { "component": "Avatar & ID", "styles": "Center aligned. Cyberpunk hacker tag." },
+        { "component": "Stats Row", "children": ["Total Agents", "Total XP"] },
+        { "component": "Settings List", "children": ["API Keys (GitHub)", "Theme", "Log Out"] }
+      ]
+    }
+  ],
+  "media": {
+    "images": {
+      "hero_bg": "https://images.unsplash.com/photo-1770719798885-3ad09e0bd8f3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHxjeWJlcnB1bmslMjB0ZWNobm9sb2d5JTIwbmVvbiUyMG5pZ2h0fGVufDB8fHx8MTc3Njc1ODkyNHww&ixlib=rb-4.1.0&q=85",
+      "ai_core_1": "https://images.unsplash.com/photo-1743398665751-2cd5d3cc9d46?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwyfHxob2xvZ3JhcGhpYyUyMG5lb24lMjBkYXRhJTIwY2hhcnQlMjAzZHxlbnwwfHx8fDE3NzY3NTg5MzV8MA&ixlib=rb-4.1.0&q=85",
+      "ai_core_2": "https://images.unsplash.com/photo-1764303017897-16f5009d2bb1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMG5lb24lMjBnZW9tZXRyaWMlMjBzaGFwZXMlMjBkYXJrfGVufDB8fHx8MTc3Njc1ODkzNXww&ixlib=rb-4.1.0&q=85",
+      "cyber_city": "https://images.pexels.com/photos/28122495/pexels-photo-28122495.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "user_avatar": "https://images.unsplash.com/photo-1767475190453-28ff9b0545ad?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwzfHxjeWJlcnB1bmslMjB0ZWNobm9sb2d5JTIwbmVvbiUyMG5pZ2h0fGVufDB8fHx8MTc3Njc1ODkyNHww&ixlib=rb-4.1.0&q=85"
+    }
+  },
+  "testing_conventions": {
+    "required_attribute": "data-testid",
+    "naming_pattern": "kebab-case, role-based",
+    "examples": [
+      "data-testid='deploy-agent-button'",
+      "data-testid='total-earnings-text'",
+      "data-testid='marketplace-category-tab-trading'",
+      "data-testid='wallet-withdraw-button'"
+    ]
+  },
+  "instructions_to_main_agent": [
+    "CRITICAL: This is a React Native Expo app using .js files. Do NOT use HTML tags (div, span). Use View, Text, TouchableOpacity, ScrollView, FlatList, Image from 'react-native'.",
+    "CRITICAL: Use expo-router file-based routing. Wrap the app navigation in Expo Router Tabs for the 5 main sections.",
+    "CRITICAL: Style everything using StyleSheet.create(). Do not use Tailwind CSS unless NativeWind is pre-configured, but assume standard StyleSheet.",
+    "CRITICAL: All interactive elements MUST have a data-testid attribute per the testing conventions.",
+    "CRITICAL: Implement animations using react-native-reanimated. Specifically, use FadeInDown for staggered list item entrances in the Marketplace and Leaderboard.",
+    "CRITICAL: Never use emojis. Use @expo/vector-icons (Ionicons) exclusively.",
+    "CRITICAL: Build the aesthetic with heavy contrast: Deepest Black backgrounds (#030305) and vivid Neon borders/text (#39FF14 for money, #00FFFF for AI). Use shadow props in React Native to simulate neon glows."
+  ]
+}
