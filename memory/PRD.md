@@ -33,3 +33,9 @@ Leaderboard creates social pull ("trending agents"), community earned counter cr
 ## Known limitations / future
 - LLM-powered "agent insights" (Claude via Emergent Universal Key) skipped in v1 per user request — integration playbook already obtained.
 - Single-user; auth layer can be added via Emergent Google Auth.
+
+## Iteration 2 — Claude Sonnet 4.5 Evolution Narratives (Feb 2026)
+- New endpoint `GET /api/insight/{deployment_id}` calls Claude Sonnet 4.5 (`claude-sonnet-4-5-20250929`) via `emergentintegrations.llm.chat.LlmChat` using `EMERGENT_LLM_KEY`.
+- "NEURAL LOG" card appears on Agent Detail under the Evolution section for any deployed agent, with a "powered by Claude Sonnet 4.5" footer.
+- Insights cached in `db.insights` keyed by `(deployment_id, level)` — Claude is called only on first view of each new level (no polling cost).
+- 5/5 new backend tests pass + 17/17 iteration-1 regression tests still pass.
