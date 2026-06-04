@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 
 ROOT_DIR = Path(__file__).parent
@@ -581,6 +582,88 @@ async def categories():
         {"id": "scraping", "label": "Scraping"},
         {"id": "tasks", "label": "Tasks"},
     ]
+
+
+# ================== CLAUDE INSIGHTS ==================
+EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
+INSIGHT_SYSTEM = (
+    "You are the narrative voice of CASH CLAW, a cyberpunk AI-agent control deck. "
+    "Given an agent's stats, write a TIGHT 2-sentence evolution log (max 35 words total) "
+    "that sounds like a hacker terminal whisper: present tense, second person ('Your agent'), "
+    "punchy, no emojis, no markdown, no quotes. Reference what the agent JUST learned or "
+    "refined to reach this level, and hint at what it is hunting next."
+)
+
+
+async def _generate_insight(agent: dict, deployment: dict) -> str:
+    if not EMERGENT_LLM_KEY:
+        return ""
+    prompt = (
+        f"AGENT: {agent['name']} ({agent['category']})\n"
+        f"PURPOSE: {agent['tagline']}\n"
+        f"DESCRIPTION: {agent['description']}\n"
+        f"LEVEL: {deployment['level']} | XP: {deployment['xp']} | "
+        f"EARNED: ${deployment['earned_total']:.2f}\n"
+        f"Write the evolution log now."
+    )
+    try:
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"insight_{deployment['id']}_{deployment['level']}",
+            system_message=INSIGHT_SYSTEM,
+        ).with_model("anthropic", "claude-sonnet-4-5-20250929")
+        response = await chat.send_message(UserMessage(text=prompt))
+        return (response or "").strip()
+    except Exception as e:
+        logger.warning(f"insight generation failed: {e}")
+        return ""
+
+
+@api_router.get("/insight/{deployment_id}")
+async def get_insight(deployment_id: str):
+    dep = await db.deployed_agents.find_one({"id": deployment_id}, {"_id": 0})
+    if not dep:
+        raise HTTPException(404, "Deployment not found")
+    agent = await db.agents.find_one({"id": dep["agent_id"]}, {"_id": 0})
+    if not agent:
+        raise HTTPException(404, "Agent not found")
+
+    # tick first so we evaluate the latest level
+    dep = await _tick_deployed(dep, agent)
+
+    cached = await db.insights.find_one(
+        {"deployment_id": deployment_id, "level": dep["level"]}, {"_id": 0}
+    )
+    if cached:
+        return {
+            "deployment_id": deployment_id,
+            "level": dep["level"],
+            "narrative": cached["narrative"],
+            "generated_at": cached["generated_at"],
+            "cached": True,
+        }
+
+    narrative = await _generate_insight(agent, dep)
+    if not narrative:
+        return {
+            "deployment_id": deployment_id,
+            "level": dep["level"],
+            "narrative": "",
+            "generated_at": None,
+            "cached": False,
+            "error": "insight_unavailable",
+        }
+
+    doc = {
+        "deployment_id": deployment_id,
+        "agent_id": dep["agent_id"],
+        "level": dep["level"],
+        "narrative": narrative,
+        "generated_at": datetime.now(timezone.utc),
+    }
+    await db.insights.insert_one(doc)
+    doc.pop("_id", None)
+    return {**doc, "cached": False}
 
 
 app.include_router(api_router)

@@ -19,6 +19,8 @@ export default function AgentDetail() {
   const [agent, setAgent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [insight, setInsight] = useState<any>(null);
+  const [insightLoading, setInsightLoading] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -35,6 +37,23 @@ export default function AgentDetail() {
     const t = setInterval(load, 5000);
     return () => clearInterval(t);
   }, [load]);
+
+  // Fetch Claude insight when deployment exists. Re-fetch whenever level changes.
+  useEffect(() => {
+    const dep = agent?.my_deployment;
+    if (!dep?.id) {
+      setInsight(null);
+      return;
+    }
+    if (insight && insight.level === dep.level) return;
+    let cancelled = false;
+    setInsightLoading(true);
+    api.insight(dep.id)
+      .then((r) => { if (!cancelled) setInsight(r); })
+      .catch(() => { if (!cancelled) setInsight(null); })
+      .finally(() => { if (!cancelled) setInsightLoading(false); });
+    return () => { cancelled = true; };
+  }, [agent?.my_deployment?.id, agent?.my_deployment?.level, insight]);
 
   const onDeploy = async () => {
     if (!agent) return;
@@ -165,6 +184,38 @@ export default function AgentDetail() {
           </GlassCard>
         </Animated.View>
 
+        {/* Claude AI Insight - only when deployed */}
+        {dep && (
+          <Animated.View entering={FadeInDown.delay(250).springify()}>
+            <GlassCard glow="cyan" style={styles.insightCard} testID="agent-insight-card">
+              <View style={styles.insightHead}>
+                <Ionicons name="sparkles-outline" size={16} color={colors.aiCyan} />
+                <Text style={styles.insightTitle}>NEURAL LOG · LVL {dep.level}</Text>
+                {insight?.cached && (
+                  <View style={styles.cachedPill}>
+                    <Text style={styles.cachedTxt}>CACHED</Text>
+                  </View>
+                )}
+              </View>
+              {insightLoading && !insight ? (
+                <View style={styles.insightLoading}>
+                  <ActivityIndicator color={colors.aiCyan} size="small" />
+                  <Text style={styles.insightLoadingTxt}>Decoding evolution log...</Text>
+                </View>
+              ) : insight?.narrative ? (
+                <Text style={styles.insightTxt} testID="agent-insight-text">
+                  {insight.narrative}
+                </Text>
+              ) : (
+                <Text style={styles.insightFallback}>
+                  Insight unavailable. Agent will report on next level-up.
+                </Text>
+              )}
+              <Text style={styles.insightFooter}>powered by Claude Sonnet 4.5</Text>
+            </GlassCard>
+          </Animated.View>
+        )}
+
         {/* Community stats */}
         <Animated.View entering={FadeInDown.delay(300).springify()}>
           <Text style={styles.sectionTitle}>COMMUNITY</Text>
@@ -265,6 +316,28 @@ const styles = StyleSheet.create({
   depStatVal: { color: colors.primary, fontSize: 18, fontWeight: '800', fontFamily: 'Courier' },
   depStatLbl: { color: colors.textMuted, fontSize: 10, letterSpacing: 1, fontWeight: '700', marginTop: 2 },
   notDeployed: { color: colors.textSecondary, fontSize: 13, lineHeight: 20 },
+  insightCard: { padding: spacing.lg, marginTop: spacing.md },
+  insightHead: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
+  insightTitle: {
+    color: colors.aiCyan, fontSize: 11, letterSpacing: 2, fontWeight: '800',
+    marginLeft: 6, flex: 1,
+  },
+  cachedPill: {
+    paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  cachedTxt: { color: colors.textMuted, fontSize: 8, fontWeight: '800', letterSpacing: 1 },
+  insightLoading: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm },
+  insightLoadingTxt: { color: colors.textMuted, fontSize: 12, marginLeft: 10, fontStyle: 'italic' },
+  insightTxt: {
+    color: colors.textPrimary, fontSize: 14, lineHeight: 22,
+    fontStyle: 'italic', letterSpacing: 0.2,
+  },
+  insightFallback: { color: colors.textMuted, fontSize: 12, fontStyle: 'italic' },
+  insightFooter: {
+    color: colors.textMuted, fontSize: 9, letterSpacing: 1.5, fontWeight: '600',
+    marginTop: spacing.sm, textAlign: 'right',
+  },
   communityRow: { flexDirection: 'row', gap: spacing.sm as any },
   commCard: { flex: 1, padding: spacing.md, alignItems: 'center', marginRight: spacing.sm },
   commVal: { color: colors.primary, fontSize: 20, fontWeight: '900', fontFamily: 'Courier' },

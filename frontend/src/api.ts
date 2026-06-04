@@ -31,4 +31,5 @@ export const api = {
     http<any>('/wallet/withdraw', { method: 'POST', body: JSON.stringify({ amount }) }),
   profile: () => http<any>('/profile'),
   categories: () => http<any[]>('/categories'),
+  insight: (deployment_id: string) => http<any>(`/insight/${deployment_id}`),
 };
