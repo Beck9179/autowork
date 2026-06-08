@@ -14,7 +14,7 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / '.env', override=False)
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -330,7 +330,7 @@ async def list_agents(category: Optional[str] = None):
     query = {}
     if category and category != "all":
         query["category"] = category
-    cursor = db.agents.find(query, {"_id": 0}).sort("community_earned", -1)
+    cursor = db.agents.find(query, {"_id": 0}).sort("community_earned", -1).limit(200)
     return await cursor.to_list(200)
 
 
@@ -410,7 +410,7 @@ async def toggle_deployment(deployment_id: str):
 async def my_agents():
     deps = await db.deployed_agents.find(
         {"user_id": DEMO_USER_ID}, {"_id": 0}
-    ).to_list(200)
+    ).limit(200).to_list(200)
     if not deps:
         return []
     agent_ids = [d["agent_id"] for d in deps]
@@ -436,7 +436,7 @@ async def my_agents():
 async def dashboard():
     deps = await db.deployed_agents.find(
         {"user_id": DEMO_USER_ID}, {"_id": 0}
-    ).to_list(200)
+    ).limit(200).to_list(200)
 
     agents_map: dict = {}
     if deps:
@@ -462,13 +462,11 @@ async def dashboard():
     avg_evolution = (total_level / len(deps)) if deps else 0
 
     # Featured: top agent by community_earned the user hasn't deployed, else highest
-    deployed_ids = {d["agent_id"] for d in deps}
-    featured = None
-    cursor = db.agents.find({}, {"_id": 0}).sort("community_earned", -1).limit(50)
-    async for a in cursor:
-        if a["id"] not in deployed_ids:
-            featured = a
-            break
+    deployed_ids = list({d["agent_id"] for d in deps})
+    featured = await db.agents.find_one(
+        {"id": {"$nin": deployed_ids}}, {"_id": 0},
+        sort=[("community_earned", -1)],
+    )
     if featured is None:
         featured = await db.agents.find_one({}, {"_id": 0}, sort=[("community_earned", -1)])
 
@@ -527,7 +525,7 @@ async def leaderboard():
 @api_router.get("/wallet")
 async def get_wallet():
     # tick everything to make balance fresh
-    deps = await db.deployed_agents.find({"user_id": DEMO_USER_ID}, {"_id": 0}).to_list(200)
+    deps = await db.deployed_agents.find({"user_id": DEMO_USER_ID}, {"_id": 0}).limit(200).to_list(200)
     for dep in deps:
         agent = await db.agents.find_one({"id": dep["agent_id"]}, {"_id": 0})
         if agent:
@@ -572,7 +570,7 @@ async def withdraw(req: WithdrawRequest):
 
 @api_router.get("/profile")
 async def get_profile():
-    deps = await db.deployed_agents.find({"user_id": DEMO_USER_ID}, {"_id": 0}).to_list(200)
+    deps = await db.deployed_agents.find({"user_id": DEMO_USER_ID}, {"_id": 0}).limit(200).to_list(200)
     total_xp = sum(d.get("xp", 0) for d in deps)
     wallet = await db.wallets.find_one({"user_id": DEMO_USER_ID}, {"_id": 0}) or {}
     return {
