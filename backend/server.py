@@ -411,9 +411,14 @@ async def my_agents():
     deps = await db.deployed_agents.find(
         {"user_id": DEMO_USER_ID}, {"_id": 0}
     ).to_list(200)
+    if not deps:
+        return []
+    agent_ids = [d["agent_id"] for d in deps]
+    agents = await db.agents.find({"id": {"$in": agent_ids}}, {"_id": 0}).to_list(len(agent_ids))
+    agents_map = {a["id"]: a for a in agents}
     result = []
     for dep in deps:
-        agent = await db.agents.find_one({"id": dep["agent_id"]}, {"_id": 0})
+        agent = agents_map.get(dep["agent_id"])
         if not agent:
             continue
         dep = await _tick_deployed(dep, agent)
@@ -433,12 +438,18 @@ async def dashboard():
         {"user_id": DEMO_USER_ID}, {"_id": 0}
     ).to_list(200)
 
+    agents_map: dict = {}
+    if deps:
+        agent_ids = [d["agent_id"] for d in deps]
+        agents = await db.agents.find({"id": {"$in": agent_ids}}, {"_id": 0}).to_list(len(agent_ids))
+        agents_map = {a["id"]: a for a in agents}
+
     total_earned = 0.0
     active_count = 0
     total_xp = 0
     total_level = 0
     for dep in deps:
-        agent = await db.agents.find_one({"id": dep["agent_id"]}, {"_id": 0})
+        agent = agents_map.get(dep["agent_id"])
         if agent:
             dep = await _tick_deployed(dep, agent)
         total_earned += dep.get("earned_total", 0.0)
@@ -453,7 +464,7 @@ async def dashboard():
     # Featured: top agent by community_earned the user hasn't deployed, else highest
     deployed_ids = {d["agent_id"] for d in deps}
     featured = None
-    cursor = db.agents.find({}, {"_id": 0}).sort("community_earned", -1)
+    cursor = db.agents.find({}, {"_id": 0}).sort("community_earned", -1).limit(50)
     async for a in cursor:
         if a["id"] not in deployed_ids:
             featured = a
@@ -497,8 +508,11 @@ async def leaderboard():
         } for a in agents]
 
     result = []
+    agent_ids = [r["_id"] for r in rows]
+    agents = await db.agents.find({"id": {"$in": agent_ids}}, {"_id": 0}).to_list(len(agent_ids))
+    agents_map = {a["id"]: a for a in agents}
     for r in rows:
-        agent = await db.agents.find_one({"id": r["_id"]}, {"_id": 0})
+        agent = agents_map.get(r["_id"])
         if not agent:
             continue
         result.append({
