@@ -4,6 +4,7 @@
   "devCommand": "vite",
   "framework": "vite",
   "env": {
-    "VITE_API_URL": "@env VITE_API_URL"
+    "VITE_API_URL": "@env VITE_API_URL",
+    "VITE_ANTHROPIC_API_KEY": "@env VITE_ANTHROPIC_API_KEY"
   }
 }
